@@ -46,6 +46,11 @@ i2c:
   sda: GPIO06
   scl: GPIO05
   scan: true
+  frequency: 100kHz
+
+  # try this
+  sda_pullup_enabled: true
+  scl_pullup_enabled: true
 
 hcpbridge:
   id: hcpbridge_id
