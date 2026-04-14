@@ -45,7 +45,7 @@ dashboard_import:
 i2c:
   sda: GPIO06
   scl: GPIO05
-  scan: false
+  scan: true
 
 hcpbridge:
   id: hcpbridge_id
