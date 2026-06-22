@@ -165,6 +165,7 @@
 			<canvas width="250px" height="250px" id="dc"></canvas>
 			<h3 id="status">Waiting for connection.</h3>
 		</div>
+		<div class="hbox" style="display: none;" id="sensors"></div>
 	</div>
 	
 	<hr/>
@@ -263,6 +264,13 @@
 					<small>Temp. / Humidity / Pressure</small>
 				</div>
 				<input type="checkbox" id="sen_bme_en" name="sen_bme_en">
+			</div>
+			<div class="flex">
+				<div class="form-label">
+					<label for="sen_aht_en">AHT20 (I2C)</label>
+					<small>Temp. / Humidity</small>
+				</div>
+				<input type="checkbox" id="sen_aht_en" name="sen_aht_en">
 			</div>
 			<div class="flex">
 				<div class="form-label">
@@ -500,11 +508,11 @@
 		xhr.onreadystatechange = function() {
 			if (this.readyState == 4 && this.status == 200) {
 				var info = JSON.parse(this.responseText);
-				document.getElementById("si_version").textContent = "v" + (info.swversion || "?");
+				document.getElementById("si_version").textContent = "v" + (info.swversion + " (tynet.eu)" || "?");
 				document.getElementById("si_buildenv").textContent = info.buildenv || "?";
 				document.getElementById("si_hostname").textContent = info.hostname || "?";
 				document.getElementById("si_ip").textContent = info.ip || "?";
-				document.getElementById("si_wifi").textContent = info.wifistatus == 3 ? "Connected" : "Disconnected";
+				document.getElementById("si_wifi").textContent = info.wifistatus == 3 ? "Connected (" + info.wifirssi + " dBm)" : "Disconnected";
 				document.getElementById("si_mqtt").textContent = info.mqttstatus ? "Connected" : "Disconnected";
 				document.getElementById("si_mem").textContent = info.freemem ? (Math.round(info.freemem/1024) + " KB") : "?";
 				document.getElementById("si_reset").textContent = info.restart_reason || "?";
@@ -688,7 +696,7 @@
                 isconnected = status.valid;
 				document.getElementById("status").innerHTML = getStatusText(status.valid?status.doorstate:"NA");
 				document.getElementById("light").checked = status.light && status.valid;
-				document.getElementById("swversion").innerHTML = "v" + status.swversion;
+				document.getElementById("swversion").innerHTML = "v" + status.swversion + " (tynet.eu)";
 				if (status.hasOwnProperty('sensors')) {
 					var sdiv = document.getElementById("sensors")
 					sdiv.style.display = 'flex';

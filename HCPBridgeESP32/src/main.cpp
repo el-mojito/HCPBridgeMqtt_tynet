@@ -81,6 +81,7 @@ void IRAM_ATTR reset_button_change() {
 void disableAllSensors() {
     DBG_PRINTLN("Disabling all sensors...");
     localPrefs->putBool(preference_sensor_bme_enabled, false);
+    localPrefs->putBool(preference_sensor_aht_enabled, false);
     localPrefs->putBool(preference_sensor_ds18x20_enabled, false);
     localPrefs->putBool(preference_sensor_dht22_enabled, false);
     localPrefs->putBool(preference_sensor_hcsr04_enabled, false);
@@ -262,7 +263,7 @@ void sensorCheckTask(void *parameter) {
 // ============================================================================
 
 void setup() {
-    Serial.begin(9600);
+    Serial.begin(115200);
 
     // Setup preferences (needed for RS485 pin config)
     prefHandler.initPreferences();
@@ -340,7 +341,7 @@ void setup() {
         NULL,
         configMAX_PRIORITIES - 3,
         &mqttTask,
-        0);
+        1);
 
     // Sensor polling task (only if any sensor is active)
     if (sensorManager.hasAnySensor()) {
@@ -351,7 +352,7 @@ void setup() {
             NULL,
             configMAX_PRIORITIES,
             &sensorTask,
-            0);
+            1);
     }
 
     // ========================================================================
@@ -433,6 +434,7 @@ void setup() {
         root["hostname"] = WiFi.getHostname();
         root["ip"] = WiFi.localIP().toString();
         root["wifistatus"] = WiFi.status();
+        root["wifirssi"] = WiFi.RSSI();
         root["mqttstatus"] = mqttHandler.getClient().connected();
         root["restart_reason"] = esp_reset_reason();
         root["swversion"] = HA_VERSION;

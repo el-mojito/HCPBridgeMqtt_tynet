@@ -95,6 +95,35 @@ bool SensorManager::initBme(Preferences* prefs) {
     return true;
 }
 
+bool SensorManager::initAht(Preferences* prefs) {
+    DBG_PRINTLN("In INIT AHT20...");
+
+    _i2cSdaPin = prefs->getInt(preference_sensor_i2c_sda);
+    _i2cSclPin = prefs->getInt(preference_sensor_i2c_scl);
+
+    if (_i2cSdaPin == 0 || _i2cSclPin == 0) {
+        setError("AHT20: pins not set");
+        return false;
+    }
+
+    _i2cBme.begin(_i2cSdaPin, _i2cSclPin);
+
+    if (!_aht.begin(&_i2cBme)) {
+        setError("AHT20: not found on I2C");
+        return false;
+    }
+
+    sensors_event_t humidity, temp;
+    _aht.getEvent(&humidity,
+                &temp);
+
+    _ahtTemp = temp.temperature;
+    _ahtHum = humidity.relative_humidity;
+
+    DBG_PRINTLN("AHT20: Active");
+    return true;
+}
+
 bool SensorManager::initDs18x20(Preferences* prefs) {
     _ds18x20Pin = prefs->getInt(preference_sensor_ds18x20_pin);
 
@@ -259,6 +288,11 @@ void SensorManager::begin(Preferences* prefs) {
             ? SensorStatus::ACTIVE : SensorStatus::FAILED_DISABLED;
     }
 
+    if (prefs->getBool(preference_sensor_aht_enabled)) {
+        _ahtStatus = initWithRetry([this](Preferences* p){ return initAht(p); }, prefs)
+            ? SensorStatus::ACTIVE : SensorStatus::FAILED_DISABLED;
+    }
+
     if (prefs->getBool(preference_sensor_ds18x20_enabled)) {
         _ds18x20Status = initWithRetry([this](Preferences* p){ return initDs18x20(p); }, prefs)
             ? SensorStatus::ACTIVE : SensorStatus::FAILED_DISABLED;
@@ -286,6 +320,7 @@ void SensorManager::begin(Preferences* prefs) {
 
     DBG_PRINTLN("=== Sensor Summary ===");
     DBG_PRINT("BME280:  "); DBG_PRINTLN(_bmeStatus == SensorStatus::ACTIVE ? "ACTIVE" : "off");
+    DBG_PRINT("AHT20:  "); DBG_PRINTLN(_ahtStatus == SensorStatus::ACTIVE ? "ACTIVE" : "off");
     DBG_PRINT("DS18X20: "); DBG_PRINTLN(_ds18x20Status == SensorStatus::ACTIVE ? "ACTIVE" : "off");
     DBG_PRINT("DHT22:   "); DBG_PRINTLN(_dht22Status == SensorStatus::ACTIVE ? "ACTIVE" : "off");
     DBG_PRINT("HC-SR04: "); DBG_PRINTLN(_hcsr04Status == SensorStatus::ACTIVE ? "ACTIVE" : "off");
@@ -331,6 +366,35 @@ void SensorManager::pollBme() {
         _bmeLastTemp = _bmeTemp;
         _bmeLastHum = _bmeHum;
         _bmeLastPres = _bmePres;
+        _newSensorData = true;
+    }
+}
+
+void SensorManager::pollAht() {
+
+    sensors_event_t humidity, temp;
+    _aht.getEvent(&humidity,
+                &temp);
+
+    DBG_PRINTLN(temp.temperature);
+    DBG_PRINTLN(humidity.relative_humidity);
+
+    if (!validateTemperature(temp.temperature) || !validateHumidity(humidity.relative_humidity)){
+        _ahtFailCount++;
+        if (_ahtFailCount >= SENSOR_MAX_FAIL_COUNT) {
+            disableSensor("AHT20", _ahtStatus);
+        }
+        return;
+    }
+
+    _ahtFailCount = 0;
+    _ahtTemp = temp.temperature;
+    _ahtHum = humidity.relative_humidity;
+
+    if (abs(_ahtTemp - _ahtLastTemp) >= tempThreshold ||
+        abs(_ahtHum - _ahtLastHum) >= humThreshold) {
+        _ahtLastTemp = _ahtTemp;
+        _ahtLastHum = _ahtHum;
         _newSensorData = true;
     }
 }
@@ -482,6 +546,9 @@ void SensorManager::poll() {
     if (_bmeStatus == SensorStatus::ACTIVE) {
         pollBme();
     }
+    if (_ahtStatus == SensorStatus::ACTIVE) {
+        pollAht();
+    }
     if (_hcsr04Status == SensorStatus::ACTIVE) {
         pollHcsr04();
     }
@@ -508,12 +575,14 @@ void SensorManager::clearNewData() {
 
 bool SensorManager::hasTempSensor() const {
     return _bmeStatus == SensorStatus::ACTIVE ||
+           _ahtStatus == SensorStatus::ACTIVE ||
            _ds18x20Status == SensorStatus::ACTIVE ||
            _dht22Status == SensorStatus::ACTIVE;
 }
 
 bool SensorManager::hasHumiditySensor() const {
     return _bmeStatus == SensorStatus::ACTIVE ||
+           _ahtStatus == SensorStatus::ACTIVE ||            
            _dht22Status == SensorStatus::ACTIVE;
 }
 
@@ -549,6 +618,7 @@ static const char* sensorStatusStr(SensorStatus s) {
 
 void SensorManager::toDetectionJson(JsonObject& sensors) const {
     sensors["BME280"]  = sensorStatusStr(_bmeStatus);
+    sensors["AHT20"]  = sensorStatusStr(_ahtStatus);
     sensors["DS18X20"] = sensorStatusStr(_ds18x20Status);
     sensors["DHT22"]   = sensorStatusStr(_dht22Status);
     sensors["HC-SR04"] = sensorStatusStr(_hcsr04Status);
@@ -572,7 +642,7 @@ void SensorManager::updateDataStrings() {
         }
     };
 
-    // Temperature (priority: BME > DS18X20 > DHT22)
+    // Temperature (priority: BME > AHT20 > DS18X20 > DHT22)
     if (_bmeStatus == SensorStatus::ACTIVE) {
         dtostrf(_bmeTemp, 2, 1, data.fields[0].value);
         dtostrf(_bmeHum, 2, 1, data.fields[1].value);
@@ -580,6 +650,10 @@ void SensorManager::updateDataStrings() {
     }
     if (_bmeStatus != SensorStatus::NOT_CONFIGURED) {
         setFields(_bmeStatus, 0, 3);
+    } else if (_ahtStatus == SensorStatus::ACTIVE) {
+        dtostrf(_ahtTemp, 2, 1, data.fields[0].value);
+        dtostrf(_ahtHum, 2, 1, data.fields[1].value);
+        data.fields[0].active = data.fields[1].active = true;
     } else if (_ds18x20Status == SensorStatus::ACTIVE) {
         dtostrf(_ds18x20Temp, 2, 1, data.fields[0].value);
         data.fields[0].active = true;

@@ -18,7 +18,7 @@ esphome:
   name_add_mac_suffix: true
   project:
     name: "tynet.hcpbridge_e4"
-    version: "1.0.0"
+    version: "1.0.6"
   libraries:
     - emelianov/modbus-esp8266
   platformio_options:
@@ -141,6 +141,21 @@ sensor:
       name: "DHT Humidity"
       id: sensor_dht_humidity
     update_interval: 30s
+  - platform: aht10
+    id: sensor_aht20
+    variant: AHT20
+    temperature:
+      name: "AHT20 Temperature"
+      id: sensor_aht_temperature
+    humidity:
+      name: "AHT20 Humidity"
+      id: sensor_aht_humidity
+    update_interval: 30s
+  - platform: wifi_signal # Reports the WiFi signal strength/RSSI in dB
+    name: "WiFi Signal dB"
+    id: wifi_signal_db
+    update_interval: 30s
+    entity_category: "diagnostic"
 
 api:
   services:
@@ -182,7 +197,7 @@ captive_portal:
 
 # Enable logging
 logger:
-  level: DEBUG
+  level: WARN
   baud_rate: 9600
 
 ota:

@@ -5,6 +5,7 @@
 #include <ArduinoJson.h>
 #include <Wire.h>
 #include <Adafruit_Sensor.h>
+#include <Adafruit_AHTX0.h>
 #include <Adafruit_BME280.h>
 #include <OneWire.h>
 #include <DallasTemperature.h>
@@ -79,6 +80,7 @@ public:
 
     // Sensor status queries
     SensorStatus getBmeStatus() const { return _bmeStatus; }
+    SensorStatus getAhtStatus() const { return _ahtStatus; }
     SensorStatus getDs18x20Status() const { return _ds18x20Status; }
     SensorStatus getHcsr04Status() const { return _hcsr04Status; }
     SensorStatus getDht22Status() const { return _dht22Status; }
@@ -128,6 +130,7 @@ private:
 
     // Init functions (called in begin() for enabled sensors)
     bool initBme(Preferences* prefs);
+    bool initAht(Preferences* prefs);
     bool initDs18x20(Preferences* prefs);
     bool initDht22(Preferences* prefs);
     bool initHcsr04(Preferences* prefs);
@@ -136,6 +139,7 @@ private:
 
     // Poll functions
     void pollBme();
+    void pollAht();
     void pollDs18x20();
     void pollDht22();
     void pollHcsr04();
@@ -147,6 +151,7 @@ private:
 
     // Sensor states
     SensorStatus _bmeStatus = SensorStatus::NOT_CONFIGURED;
+    SensorStatus _ahtStatus = SensorStatus::NOT_CONFIGURED;
     SensorStatus _ds18x20Status = SensorStatus::NOT_CONFIGURED;
     SensorStatus _hcsr04Status = SensorStatus::NOT_CONFIGURED;
     SensorStatus _dht22Status = SensorStatus::NOT_CONFIGURED;
@@ -155,6 +160,7 @@ private:
 
     // Fail counters
     int _bmeFailCount = 0;
+    int _ahtFailCount = 0;
     int _ds18x20FailCount = 0;
     int _dht22FailCount = 0;
     int _hcsr04FailCount = 0;
@@ -163,6 +169,7 @@ private:
     // Sensor hardware
     TwoWire _i2cBme = TwoWire(0);
     Adafruit_BME280 _bme;
+    Adafruit_AHTX0 _aht;
     int _i2cSdaPin = 0;
     int _i2cSclPin = 0;
 
@@ -186,6 +193,8 @@ private:
     float _bmeTemp = -99.99, _bmeLastTemp = -99.99;
     float _bmeHum = -99.99, _bmeLastHum = -99.99;
     float _bmePres = -99.99, _bmeLastPres = -99.99;
+    float _ahtTemp = -99.99, _ahtLastTemp = -99.99;
+    float _ahtHum = -99.99, _ahtLastHum = -99.99;
     float _ds18x20Temp = -99.99, _ds18x20LastTemp = -99.99;
     float _dht22Temp = -99.99, _dht22LastTemp = -99.99;
     float _dht22Hum = -99.99, _dht22LastHum = -99.99;

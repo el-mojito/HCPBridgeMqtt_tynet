@@ -52,6 +52,7 @@
 
 // Sensor enable flags (manual selection via WebUI)
 #define preference_sensor_bme_enabled "sen_bme_en"
+#define preference_sensor_aht_enabled "sen_aht_en"
 #define preference_sensor_ds18x20_enabled "sen_ds18_en"
 #define preference_sensor_dht22_enabled "sen_dht_en"
 #define preference_sensor_hcsr04_enabled "sen_sr04_en"
@@ -128,11 +129,12 @@ static const PrefDef PREF_REGISTRY[] = {
     {preference_mqtt_server_port,   PrefType::INT,    false,  PREF_GROUP_BASIC,    "",             MQTTPORT,       0.0,        false},
     {preference_mqtt_user,          PrefType::STRING, false,  PREF_GROUP_BASIC,    MQTTUSER,       0,              0.0,        false},
     {preference_mqtt_password,      PrefType::STRING, true,   PREF_GROUP_BASIC,    MQTTPASSWORD,   0,              0.0,        false},
-    {preference_debug_enabled,      PrefType::BOOL,   false,  PREF_GROUP_BASIC,    "",             0,              0.0,        false},
+    {preference_debug_enabled,      PrefType::BOOL,   false,  PREF_GROUP_BASIC,    "",             0,              0.0,        true},
 
     // === Sensor Config (WebUI sensor tab) ===
     // Enable flags
     {preference_sensor_bme_enabled,   PrefType::BOOL, false,  PREF_GROUP_SENSOR,   "",             0,              0.0,        false},
+    {preference_sensor_aht_enabled,   PrefType::BOOL, false,  PREF_GROUP_SENSOR,   "",             0,              0.0,        true},
     {preference_sensor_ds18x20_enabled,PrefType::BOOL, false, PREF_GROUP_SENSOR,   "",             0,              0.0,        false},
     {preference_sensor_dht22_enabled, PrefType::BOOL,  false,  PREF_GROUP_SENSOR,   "",             0,              0.0,        false},
     {preference_sensor_hcsr04_enabled,PrefType::BOOL,  false,  PREF_GROUP_SENSOR,   "",             0,              0.0,        false},

@@ -11,7 +11,7 @@
     #define DBG_PRINTF(...)   do { if (debugEnabled) Serial.printf(__VA_ARGS__); } while(0)
 
     // Please change on every new firmware builds!
-    inline const char *HA_VERSION = "1.0.0";
+    inline const char *HA_VERSION = "1.0.6";
 
     // WIFI Hostname
     inline const char HOSTNAME[]   = "HCPBRIDGE";
@@ -84,7 +84,7 @@
     // MQTT
     inline const int READ_DELAY = 2000;           // intervall (ms) to update status on mqtt
 
-    #define SENSE_PERIOD 120  //read interval in Seconds of all defined sensors in seconds
+    #define SENSE_PERIOD 60  //read interval in Seconds of all defined sensors in seconds
 
     #define temp_threshold 0.5    //only send mqtt msg when temp,pressure or humidity rises this threshold. set 0 to send every status
     #define hum_threshold 1    //only send mqtt msg when temp,pressure or humidity rises this threshold. set 0 to send every status
@@ -103,6 +103,9 @@
     #elif defined(HCP_Giffordv3)
         #define I2C_SDA 21
         #define I2C_SCL 33
+    #elif defined(HCP_Tynet)
+        #define I2C_SDA 6
+        #define I2C_SCL 5
     #else
         #define I2C_SDA 21
         #define I2C_SCL 22
@@ -159,6 +162,7 @@
         #define MQ4_DIGITAL_PIN 15
     #elif defined(HCP_Tynet)
         #define LED1 12
+        #define LED2 11
         #define MQ4_ANALOG_PIN 0
         #define MQ4_DIGITAL_PIN 0
     #else

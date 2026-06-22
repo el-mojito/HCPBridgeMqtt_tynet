@@ -143,6 +143,7 @@ void PreferenceHandler::saveConf(JsonDocument& doc) {
 
     if (saveSensor) {
         preferences->putBool(preference_sensor_bme_enabled, !doc[preference_sensor_bme_enabled].isNull() && doc[preference_sensor_bme_enabled].as<String>() == "on");
+        preferences->putBool(preference_sensor_aht_enabled, !doc[preference_sensor_aht_enabled].isNull() && doc[preference_sensor_aht_enabled].as<String>() == "on");
         preferences->putBool(preference_sensor_ds18x20_enabled, !doc[preference_sensor_ds18x20_enabled].isNull() && doc[preference_sensor_ds18x20_enabled].as<String>() == "on");
         preferences->putBool(preference_sensor_dht22_enabled, !doc[preference_sensor_dht22_enabled].isNull() && doc[preference_sensor_dht22_enabled].as<String>() == "on");
         preferences->putBool(preference_sensor_hcsr04_enabled, !doc[preference_sensor_hcsr04_enabled].isNull() && doc[preference_sensor_hcsr04_enabled].as<String>() == "on");
