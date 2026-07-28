@@ -238,7 +238,7 @@
                     // 1,  /* Priority of the task */
                     configMAX_PRIORITIES - 1,
                     &modBusTask, /* Task handle. */
-                    0);          /* Core where the task should run */
+                    1);          /* Core where the task should run */
 
                 // Required for Write
                 mb.addHreg(0x9C41, 0, 0x03);  // Commands

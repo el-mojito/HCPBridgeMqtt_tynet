@@ -11,7 +11,7 @@
     #define DBG_PRINTF(...)   do { if (debugEnabled) Serial.printf(__VA_ARGS__); } while(0)
 
     // Please change on every new firmware builds!
-    inline const char *HA_VERSION = "1.0.6";
+    inline const char *HA_VERSION = "1.0.7";
 
     // WIFI Hostname
     inline const char HOSTNAME[]   = "HCPBRIDGE";
