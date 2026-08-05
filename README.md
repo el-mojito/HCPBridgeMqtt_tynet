@@ -46,6 +46,7 @@ If you don't use Home Assistant you can modify the yaml configuration to use MQT
 - Web Interface for configuration & control  
 - OTA Updates  
 - First-use hotspot (for out-of-the-box Wi-Fi setup) 
+- Connects to the strongest AP if the SSID is broadcast by several access points
 - Optional external sensors (DS18x20, BME280, DHT22, HC-SR04, HC-SR501, MQ4)
 - Efficient MQTT traffic (only publish on state change)  
 - Support multiple HCP Bridges for multiple garage doors (one bridge per motor)
@@ -61,6 +62,15 @@ You can use the WebUI for configuration and control of the garage door under.
 
 <img width="632" height="790" alt="image" src="https://github.com/user-attachments/assets/a3b047f2-63ca-4785-bbc7-5dc1dd7dba2c" />
 
+<br>
+
+## Wi-Fi in multi-AP networks
+
+If the same SSID is broadcast by several access points (UniFi, mesh, repeaters), leave **Connect to strongest AP** enabled in the basic configuration (default: on). The device then scans all channels and associates with the AP with the best signal, instead of the first one it happens to find. Without it the bridge can stay attached to a far AP at a very weak signal and re-attach to that same AP after every reconnect, so it cannot be moved from the network side.
+
+Turn it off to get the slightly faster (but signal-agnostic) fast scan on single-AP networks.
+
+For the ESPHome based firmware the equivalent is `fast_connect: false` in the `wifi:` block (the default).
 
 <br><br><br><br><br><br><br><br><br><br>
 
